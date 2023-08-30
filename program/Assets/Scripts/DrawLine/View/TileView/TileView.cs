@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace DrawLine {
-    public class TileView : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler {
+    public class TileView : MonoBehaviour , IPointerDownHandler, IPointerEnterHandler {
         [SerializeField] private Image effectImage;
         [SerializeField] private Image point;
         [SerializeField] private LineEnd lineEnd;
@@ -75,10 +75,6 @@ namespace DrawLine {
             if (Input.GetMouseButton(0)) {
                 GameView.Input(InputType.Down, Tile);
             }
-        }
-
-        public void OnPointerUp(PointerEventData eventData) {
-            GameView.Input(InputType.Up, Tile);
         }
     }
 }

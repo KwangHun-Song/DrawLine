@@ -27,13 +27,11 @@ namespace DrawLine.Test.Editor {
             // 빨간색 라인을 완성한다.
             controller.Input(InputType.Down, 0);
             controller.Input(InputType.Down, 3);
-            controller.InputUp();
 
             Assert.IsTrue(controller.IsConnectedTwoPoints(ColorIndex.Red));
 
             // 다시 0번을 클릭하면 완성된 포인트는 취소되어있다.
             controller.Input(InputType.Down, 0);
-            controller.InputUp();
 
             Assert.IsFalse(controller.IsConnectedTwoPoints(ColorIndex.Red));
 
@@ -42,21 +40,18 @@ namespace DrawLine.Test.Editor {
             controller.Input(InputType.Down, 7);
             controller.Input(InputType.Down, 8);
             controller.Input(InputType.Down, 5);
-            controller.InputUp();
 
             Assert.IsTrue(controller.IsConnectedTwoPoints(ColorIndex.Blue));
 
             // 노란색으로 침범한다. 파란색은 끊겨 있다.
             controller.Input(InputType.Down, 4);
             controller.Input(InputType.Down, 7);
-            controller.InputUp();
 
             Assert.IsFalse(controller.IsConnectedTwoPoints(ColorIndex.Blue));
 
             // 노란색으로 그리다가 1번에서 손을 뗀다.
             controller.Input(InputType.Down, 4);
             controller.Input(InputType.Down, 1);
-            controller.InputUp();
 
             // 손을 뗀 곳에서 이어서 그릴 수 있다.
             controller.Input(InputType.Down, 1);
@@ -66,21 +61,18 @@ namespace DrawLine.Test.Editor {
 
             // 이미 포인트로 이은 후에는 다른 곳으로 더 드래그할 수 없다.
             controller.Input(InputType.Down, 5);
-            controller.InputUp();
 
             Assert.IsTrue(controller.IsConnectedTwoPoints(ColorIndex.Yellow));
 
             // 인접하지 않은 타일로 드래그할 수 없다.
             controller.Input(InputType.Down, 5);
             controller.Input(InputType.Down, 7);
-            controller.InputUp();
 
             Assert.AreEqual(1, controller.DrawnLines[ColorIndex.Blue].Count);
 
             // 빨간색 라인을 완성한다.
             controller.Input(InputType.Down, 3);
             controller.Input(InputType.Down, 0);
-            controller.InputUp();
 
             Assert.IsTrue(controller.IsConnectedTwoPoints(ColorIndex.Red));
 
@@ -89,7 +81,6 @@ namespace DrawLine.Test.Editor {
             controller.Input(InputType.Down, 8);
             controller.Input(InputType.Down, 7);
             controller.Input(InputType.Down, 6);
-            controller.InputUp();
 
             Assert.IsTrue(controller.IsConnectedTwoPoints(ColorIndex.Blue));
 
@@ -152,7 +143,6 @@ namespace DrawLine.Test.Editor {
             // 빨간색 라인을 일부 완성한다.
             controller.Input(InputType.Down, 0);
             controller.Input(InputType.Down, 3);
-            controller.InputUp();
 
             // 여기서 게임을 재시작한다.
             controller.RestartGame();

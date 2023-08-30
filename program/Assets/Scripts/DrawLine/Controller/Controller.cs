@@ -83,20 +83,13 @@ namespace DrawLine {
         public Tile GetTile(int index) => Tiles.SingleOrDefault(t => t.Index == index);
         
         public void Input(InputType inputType, int index) => Input(inputType, GetTile(index));
-        public void InputUp() => Input(InputType.Up, null);
         public void Input(InputType inputType, Tile tile) {
-            // 손가락을 뗀 인풋의 경우, 마지막 드래그중인 타일만 무시하고 추가 적용은 없다.
-            if (inputType == InputType.Up) {
-                LastDownTile = null;
-                return;
-            }
-            
             // 터치 불가능한 타일에 한 인풋은 무시한다.
             if (TouchableTiles.Contains(tile) == false) return;
             if (LastDownTile == tile) return;
 
-            // 마지막 드래그중인 타일이 없는 경우
-            if (LastDownTile == null) {
+            // 그리기 시작했거나 기존 그리던 곳에서 이어 그리지 않는 경우
+            if (LastDownTile == null || AreTilesAdjacent(tile, LastDownTile) == false) {
                 // 이 경우, 포인트 타일이거나 이미 색깔이 그려진 타일인 경우만 유효하다.
                 if (tile.Color == ColorIndex.None) return;
 
@@ -104,17 +97,8 @@ namespace DrawLine {
                 return;
             }
             
-            // 마지막 드래그중인 타일이 있는 경우
+            // 마지막 그리던 곳에서 계속 이어그리는 경우
             var onGoingColor = LastDownTile.Color;
-            
-            // 마지막 드래그중인 타일의 옆이 아닌 경우, 잘못된 인풋이므로 무시한다.
-            if (AreTilesAdjacent(tile, LastDownTile) == false) return;
-            
-            // 빈칸으로 드래그한 경우 컬러를 그려준다.
-            if (tile.Color == ColorIndex.None) {
-                DrawTile(tile, onGoingColor);
-                return;
-            }
             
             // 댜른 색깔이 있는 타일에 드래그한 경우
             if (tile.Color != onGoingColor) {
@@ -141,12 +125,12 @@ namespace DrawLine {
             if (tile.Type == TileType.Point && IsConnectedTwoPoints(onGoingColor)) {
                 LastDownTile = null; // 마지막 드래그중인 타일을 제거한다.(여기서 이어서 드래그할 수 없다.)
                 foreach (var listener in Listeners) listener.OnClearColor(tilesInSameColorLine);
-            }
             
-            // 클리어 체크
-            if (IsCleared()) {
-                gameCompletionSource.TrySetResult(GameResult.Clear);
-                foreach (var listener in Listeners) listener.OnClearGame();
+                // 클리어 체크
+                if (IsCleared()) {
+                    gameCompletionSource.TrySetResult(GameResult.Clear);
+                    foreach (var listener in Listeners) listener.OnClearGame();
+                }
             }
 
             void EraseUntilThisAndDraw(Tile targetTile, ColorIndex colorToErase, ColorIndex colorToDraw) {
