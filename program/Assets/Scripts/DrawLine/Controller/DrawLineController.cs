@@ -1,29 +1,17 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace DrawLine {
-    public class Controller {
-        public Controller() { }
+    public class DrawLineController : GameEngine.Controller<Level, IControllerEvent> {
+        public DrawLineController(params IControllerEvent[] listeners) : base(listeners) { }
         
-        public Controller(params IControllerEvent[] listeners) {
-            Listeners = listeners.ToList();
-        }
-        
-        private UniTaskCompletionSource<GameResult> gameCompletionSource;
-
-        public Level CurrentLevel { get; private set; }
+        #region InGame Property
         public Tile[] Tiles { get; private set; }
         public IEnumerable<Tile> TouchableTiles => Tiles.Where(t => t.Type != TileType.Invisible);
-
-        public IReadOnlyList<IControllerEvent> Listeners { get; } = new List<IControllerEvent>();
-
-        #region InGame Property
 
         [CanBeNull] public Tile LastDownTile { get; private set; }
         
@@ -35,55 +23,19 @@ namespace DrawLine {
         
         #endregion
 
-        public bool OnGoingGame => gameCompletionSource?.Task.Status.IsCompleted() == false;
-
-        public void StartGame(Level level) {
-            // 이미 진행 중인 게임이 있는 경우, 해당 게임을 종료한다.
-            if (OnGoingGame) StopGame();
-            
-            CurrentLevel = level;
-            Tiles = level.tileModels.Select(tm => new Tile(tm)).ToArray();
+        protected override void StartGameInternal() {
+            Tiles = CurrentLevel.tileModels.Select(tm => new Tile(tm)).ToArray();
             LastDownTile = null;
             drawnLines.Clear();
-            foreach (var color in level.tileModels.Select(tm => tm.answerColor).Where(c => c != ColorIndex.None).Distinct()) {
+            foreach (var color in CurrentLevel.tileModels.Select(tm => tm.answerColor).Where(c => c != ColorIndex.None).Distinct()) {
                 drawnLines[color] = new List<Tile>();
             }
-
-            // 게임 시작
-            gameCompletionSource = new UniTaskCompletionSource<GameResult>();
-            
-            // 이벤트 전달
-            foreach (var listener in Listeners) listener.OnStartGame(this);
-        }
-
-        public void RestartGame() {
-            StartGame(CurrentLevel);
-        }
-
-        public async UniTask<GameResult> WaitUntilGameEnd() {
-            try {
-                return await gameCompletionSource.Task;
-            } catch (OperationCanceledException) {
-                return GameResult.Stop;
-            }
-        }
-
-        public void ClearGame() {
-            gameCompletionSource.TrySetResult(GameResult.Clear);
-            // 이벤트 전달
-            foreach (var listener in Listeners) listener.OnClearGame();
-        }
-
-        public void StopGame() {
-            gameCompletionSource.TrySetCanceled();
-            // 이벤트 전달
-            foreach (var listener in Listeners) listener.OnStopGame();
         }
 
         public Tile GetTile(int index) => Tiles.SingleOrDefault(t => t.Index == index);
         
-        public void Input(InputType inputType, int index) => Input(inputType, GetTile(index));
-        public void Input(InputType inputType, Tile tile) {
+        public void Input(int index) => Input(GetTile(index));
+        public void Input(Tile tile) {
             // 터치 불가능한 타일에 한 인풋은 무시한다.
             if (TouchableTiles.Contains(tile) == false) return;
             if (LastDownTile == tile) return;
@@ -128,8 +80,7 @@ namespace DrawLine {
             
                 // 클리어 체크
                 if (IsCleared()) {
-                    gameCompletionSource.TrySetResult(GameResult.Clear);
-                    foreach (var listener in Listeners) listener.OnClearGame();
+                    ClearGame();
                 }
             }
 

@@ -12,7 +12,7 @@ namespace ProjectDrawLine {
                 Debug.Log("레벨이 없습니다.");
                 return;
             }
-            var controller = new Controller(gameView);
+            var controller = new DrawLineController(gameView);
             
             controller.StartGame(level);
             var result = await controller.WaitUntilGameEnd();

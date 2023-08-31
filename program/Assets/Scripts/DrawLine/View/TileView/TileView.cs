@@ -67,13 +67,13 @@ namespace DrawLine {
         }
 
         public void OnPointerDown(PointerEventData eventData) {
-            GameView.Input(InputType.Down, Tile);
+            GameView.Input(Tile);
         }
 
         public void OnPointerEnter(PointerEventData eventData) {
             // 드래그 상태로 들어오면 이번 타일로 인풋을 추가한다.
             if (Input.GetMouseButton(0)) {
-                GameView.Input(InputType.Down, Tile);
+                GameView.Input(Tile);
             }
         }
     }

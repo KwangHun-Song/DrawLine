@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using GameEngine;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,14 +16,14 @@ namespace DrawLine {
         private TileView tileViewMold;
         private TileView TileViewMold => tileViewMold ??= Resources.Load<TileView>(nameof(TileView));
         
-        private Controller Controller { get; set; }
+        private DrawLineController Controller { get; set; }
         private AnimationQueue AnimationQueue { get; } = new AnimationQueue();
         private List<TileView> TileViews { get; } = new List<TileView>();
 
 
         #region IControllerEvent
 
-        public void OnStartGame(Controller controller) {
+        public void OnStartGame(DrawLineController controller) {
             Controller = controller;
             statusText.gameObject.SetActive(false);
             
@@ -54,7 +55,7 @@ namespace DrawLine {
             statusText.text = "Stopped!";
         }
 
-        public void OnDrawTile(Controller controller, Tile tile, ColorIndex color) {
+        public void OnDrawTile(DrawLineController controller, Tile tile, ColorIndex color) {
             var tilesInLine = controller.DrawnLines[color];
             var prevTile = tilesInLine.PrevOrDefault(tile);
             var fromDirection = prevTile == null ? Direction.None : controller.GetDirection(tile, prevTile);
@@ -70,7 +71,7 @@ namespace DrawLine {
             }
         }
 
-        public void OnEraseTile(Controller controller, Tile tile, ColorIndex originColor) {
+        public void OnEraseTile(DrawLineController controller, Tile tile, ColorIndex originColor) {
             GetTileView(tile).Erase();
             
             // 이전 타일이 있으면 끊어준다.
@@ -98,8 +99,8 @@ namespace DrawLine {
 
         #endregion
 
-        public void Input(InputType inputType, Tile tile) {
-            Controller.Input(inputType, tile);
+        public void Input(Tile tile) {
+            Controller.Input(tile);
         }
 
         private TileView GetTileView(Tile tile) => TileViews.SingleOrDefault(t => t.Tile == tile);
